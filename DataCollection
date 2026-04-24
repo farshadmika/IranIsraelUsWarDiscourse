@@ -1,0 +1,46 @@
+#
+
+!pip install gdeltdoc
+
+from gdeltdoc import GdeltDoc, Filters
+import pandas as pd
+import time # Import the time module
+
+gd = GdeltDoc()
+
+outlets = [
+"reuters.com", "apnews.com", "bbc.co.uk", "nytimes.com",
+"theguardian.com", "foxnews.com", "aljazeera.com",
+"middleeasteye.net", "trtworld.com", "theintercept.com"
+]
+
+all_articles = []
+
+for outlet in outlets:
+    print(f"Collecting: {outlet}...")
+    try:
+        f = Filters(
+            keyword=[
+                "Iran Israel",
+                "Iran US",
+                
+            ],
+            start_date="2026-02-28",
+            end_date="2026-04-23",
+            domain=outlet
+        )
+        results = gd.article_search(f)
+        if len(results) > 0:
+            results["source_domain"] = outlet
+            all_articles.append(results)
+            print(f"  Got {len(results)} articles")
+        else:
+            print(f"  No results")
+    except Exception as e:
+        print(f"  Failed: {e}")
+
+    time.sleep(10)  # Be very gentle
+
+df = pd.concat(all_articles, ignore_index=True)
+print(f"\nTotal: {len(df)} articles")
+df.to_csv("/content/drive/MyDrive/iran-israel-news-framing/data/raw/gdelt_articles.csv", index=False)
